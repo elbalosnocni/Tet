@@ -112,7 +112,7 @@ measurementId: "G-BMWG1JBJMY"
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
+console.log("Firebase connected");
 const prizes=[
 {text:"500k",value:500000,limit:1},
 {text:"200k",value:200000},
