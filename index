@@ -149,44 +149,71 @@ document.getElementById("ranking").innerHTML=rankHTML;
 });
 
 async function spin(){
-const name=document.getElementById("name").value.trim();
-if(!name) return alert("Nhập tên!");
 
-await db.runTransaction(async (transaction) => {
-    const snap = await transaction.get(gameRef);
-    const data = snap.data();
+  const btn = document.getElementById("spinBtn");
+  btn.disabled = true;
 
-if(Object.keys(data.players).length >= 10)
-      throw "Đủ 10 người rồi!";
+  const name = document.getElementById("name").value.trim();
+  if(!name){
+    btn.disabled = false;
+    return alert("Nhập tên!");
+  }
 
-    if(data.players[name] !== undefined)
-      throw "Tên đã quay!";
+  try{
+    await db.runTransaction(async (transaction) => {
+      const snap = await transaction.get(gameRef);
+      if(!snap.exists) throw "Game chưa khởi tạo!";
+      const data = snap.data();
 
-    let available = prizes.filter(p=>{
-      if(p.value > data.budget) return false;
-      if(p.value == 500000 && data.specialCount >= 1) return false;
-      return true;
+      if(Object.keys(data.players).length >= 10)
+        throw "Đủ 10 người rồi!";
+
+      if(data.players[name] !== undefined)
+        throw "Tên đã quay!";
+
+      let available = prizes.filter(p=>{
+        if(p.value > data.budget) return false;
+        if(p.value == 500000 && data.specialCount >= 1) return false;
+        return true;
+      });
+
+      if(available.length == 0)
+        throw "Hết ngân sách!";
+
+      let prize = available[Math.floor(Math.random()*available.length)];
+
+      let newPlayers = {...data.players};
+      newPlayers[name] = prize.value;
+
+const wheel = document.getElementById("wheel");
+
+prizes.forEach((p,i)=>{
+  const segment = document.createElement("div");
+  segment.className="segment";
+  segment.style.transform=`rotate(${i*60}deg) skewY(-30deg)`;
+  segment.style.background=i%2==0 ? "#ffeaa7" : "#fab1a0";
+  segment.innerText=p.text;
+  wheel.appendChild(segment);
+});
+
+      transaction.update(gameRef, {
+        players: newPlayers,
+        budget: data.budget - prize.value,
+        specialCount: prize.value == 500000
+          ? data.specialCount + 1
+          : data.specialCount
+      });
+
+      alert(name + " trúng " + prize.text);
     });
+  }catch(err){
+    alert(err);
+  }
 
-    if(available.length == 0)
-      throw "Hết ngân sách!";
-
-    let prize = available[Math.floor(Math.random()*available.length)];
-
-    let newPlayers = {...data.players};
-    newPlayers[name] = prize.value;
-
-    transaction.update(gameRef, {
-      players: newPlayers,
-      budget: data.budget - prize.value,
-      specialCount: prize.value == 500000
-        ? data.specialCount + 1
-        : data.specialCount
-    });
-
-    alert(name + " trúng " + prize.text);
-  }).catch(err => alert(err));
+  setTimeout(()=> btn.disabled = false, 3000);
 }
+let rotate = 3600 + Math.floor(Math.random()*360);
+wheel.style.transform = `rotate(${rotate}deg)`;
 
 window.spin = spin;
 
