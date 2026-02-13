@@ -56,6 +56,7 @@ background:conic-gradient(
 #ffeaa7 240deg 300deg,
 #fab1a0 300deg 360deg
 );
+transform: rotate(-90deg);
 }
 
 .pointer{
@@ -66,39 +67,32 @@ transform:translateX(-50%);
 font-size:28px;
 }
 
-@media(max-width:500px){
-#wheel{
-width:280px;
-height:280px;
-}
-}
-
 @keyframes shake {
-  0%{transform:translateX(0)}
-  25%{transform:translateX(-5px)}
-  50%{transform:translateX(5px)}
-  75%{transform:translateX(-5px)}
-  100%{transform:translateX(0)}
+0%{transform:translateX(0)}
+25%{transform:translateX(-5px)}
+50%{transform:translateX(5px)}
+75%{transform:translateX(-5px)}
+100%{transform:translateX(0)}
 }
 
 @keyframes zoomWin {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+0% { transform: scale(1); }
+50% { transform: scale(1.2); }
+100% { transform: scale(1); }
 }
-  
 </style>
 </head>
 
 <body>
+
 <audio id="spinSound" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"></audio>
 <audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
 
 <h1>🧧 TẾT GIA TỘC HỌ TRƯƠNG 2026 🧧</h1>
 
 <div class="panel" id="qrPanel">
-  💰 Ngân sách còn: <b id="budget">3.000.000</b> đ
-  <div id="qr"></div>
+💰 Ngân sách còn: <b id="budget">3.000.000</b> đ
+<div id="qr"></div>
 </div>
 
 <input type="text" id="name" placeholder="Nhập tên"><br>
@@ -111,6 +105,7 @@ height:280px;
 <div id="fullNotice" style="display:none; font-weight:bold; color:red; margin-top:10px;">
 🎉 Đã đủ 10 người tham gia 🎉
 </div>
+</div>
 
 <div class="panel">
 <h3>🏆 Bảng xếp hạng</h3>
@@ -122,16 +117,16 @@ height:280px;
 
 <script>
 const firebaseConfig = {
-apiKey: "AIzaSyAChGYSzBmFDm5QV0y2KvYqAZlt144zZxg",
-authDomain: "tet-gia-toc-ho-truong.firebaseapp.com",
-projectId: "tet-gia-toc-ho-truong",
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_DOMAIN",
+projectId: "YOUR_PROJECT_ID",
 };
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 const spinSound = document.getElementById("spinSound");
 const winSound = document.getElementById("winSound");
-  
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
 const prizes=[
 {text:"500k",value:500000},
@@ -147,50 +142,45 @@ const gameRef=db.collection("game").doc("main");
 const wheel=document.getElementById("wheel");
 
 let currentRotation=0;
-const resetPassword="vtc"; 
-let fullTriggered = false;
+const resetPassword="vtc";
+let fullTriggered=false;
 
-/* vẽ chữ */
-/* vẽ chữ nằm đúng giữa tam giác */
-window.onload = function(){
-const wheelSize = wheel.offsetWidth;
-const radius = wheelSize / 2;
-const textRadius = radius * 0.55; // 55% là cân nhất
+/* ===== VẼ CHỮ ===== */
+window.onload=function(){
+const radius=wheel.offsetWidth/2;
+const textRadius=radius*0.55;
 
-prizes.forEach((p, i) => {
+prizes.forEach((p,i)=>{
+const angle=i*60+30;
 
-  const angle = i * 60 + 30;
+const label=document.createElement("div");
+label.style.position="absolute";
+label.style.left="50%";
+label.style.top="50%";
+label.style.width="100px";
+label.style.marginLeft="-50px";
+label.style.marginTop="-12px";
+label.style.textAlign="center";
+label.style.fontWeight="bold";
+label.style.fontSize="15px";
+label.style.pointerEvents="none";
+label.style.color="#b30000";
 
-  const label = document.createElement("div");
-  label.style.position = "absolute";
-  label.style.left = "50%";
-  label.style.top = "50%";
-  label.style.width = "100px";
-  label.style.marginLeft = "-50px";
-  label.style.marginTop = "-12px";
-  label.style.textAlign = "center";
-  label.style.fontWeight = "bold";
-  label.style.fontSize = "15px";
-  label.style.pointerEvents = "none";
-  label.style.color = "#b30000";
-  label.style.textShadow = "1px 1px 2px #fff";
-
-  if (p.text === "500k") {
-  label.style.color = "#c0392b";        // đỏ đậm
-  label.style.fontSize = "20px";
-  label.style.fontWeight = "900";
-  label.style.textShadow = "2px 2px 0 gold";
+if(p.value==500000){
+label.style.fontSize="20px";
+label.style.fontWeight="900";
+label.style.textShadow="2px 2px 0 gold";
 }
 
-  label.style.transform =
-  `rotate(${angle}deg) translateY(-${textRadius}px) rotate(-${angle}deg)`;
+label.style.transform=
+`rotate(${angle}deg) translateY(-${textRadius}px) rotate(-${angle}deg)`;
 
-  label.innerText = p.text;
-  wheel.appendChild(label);
+label.innerText=p.text;
+wheel.appendChild(label);
 });
 };
 
-/* init */
+/* ===== INIT ===== */
 async function init(){
 const snap=await gameRef.get();
 if(!snap.exists){
@@ -203,37 +193,24 @@ specialCount:0
 }
 init();
 
-/* realtime */
-gameRef.onSnapshot((docSnap)=>{
-if(!docSnap.exists) return;
-const data=docSnap.data();
+/* ===== REALTIME ===== */
+gameRef.onSnapshot((doc)=>{
+if(!doc.exists) return;
+const data=doc.data();
 
-const playerCount = Object.keys(data.players).length;
-const qrPanel = document.getElementById("qrPanel");
-const notice = document.getElementById("fullNotice");
-const spinBtn = document.getElementById("spinBtn");  
+const playerCount=Object.keys(data.players).length;
+const spinBtn=document.getElementById("spinBtn");
 
-  if (playerCount === 10 && !fullTriggered) {
-  fullTriggered = true;
-  spinBtn.style.animation = "none";
-void spinBtn.offsetWidth; // reset animation  
-  spinBtn.style.animation = "shake 0.5s";
-}
-  
-if (playerCount >= 10) {
-  qrPanel.style.display = "none";
-  notice.style.display = "block";
-  spinBtn.disabled = true;
-  spinBtn.innerText = "ĐÃ ĐỦ 10 NGƯỜI";
-  spinBtn.style.background = "#999";
-  spinBtn.style.cursor = "not-allowed";
-} else {
-  qrPanel.style.display = "block";
-  notice.style.display = "none";
-  spinBtn.disabled = false;
-  spinBtn.innerText = "QUAY NGAY";
-  spinBtn.style.background = "#00b894";
-  spinBtn.style.cursor = "pointer";
+if(playerCount>=10){
+document.getElementById("qrPanel").style.display="none";
+document.getElementById("fullNotice").style.display="block";
+spinBtn.disabled=true;
+spinBtn.innerText="ĐÃ ĐỦ 10 NGƯỜI";
+}else{
+document.getElementById("qrPanel").style.display="block";
+document.getElementById("fullNotice").style.display="none";
+spinBtn.disabled=false;
+spinBtn.innerText="QUAY NGAY";
 }
 
 document.getElementById("budget").innerText=
@@ -248,10 +225,10 @@ rankHTML+=`<div>${name}: ${value.toLocaleString()} đ</div>`;
 document.getElementById("ranking").innerHTML=rankHTML;
 });
 
-/* spin */
+/* ===== SPIN ===== */
 async function spin(){
 
-spinSound.currentTime = 0;
+spinSound.currentTime=0;
 spinSound.play();
 
 const btn=document.getElementById("spinBtn");
@@ -264,7 +241,7 @@ return alert("Nhập tên!");
 }
 
 try{
-await db.runTransaction(async (transaction)=>{
+await db.runTransaction(async(transaction)=>{
 const snap=await transaction.get(gameRef);
 const data=snap.data();
 
@@ -286,14 +263,11 @@ throw "Hết ngân sách!";
 let prize=available[Math.floor(Math.random()*available.length)];
 let index=prizes.findIndex(p=>p.value==prize.value);
 
-const segmentAngle = 360 / prizes.length;   // 60 độ
-const targetAngle = index * segmentAngle + segmentAngle / 2;
+const segmentAngle=360/prizes.length;
+const targetAngle=index*segmentAngle+segmentAngle/2;
+const rotation=3600+(270-targetAngle);
 
-// bù thêm 90 độ vì mũi tên ở trên (12 giờ)
-const rotation = 3600 + (270 - targetAngle);
-
-currentRotation += rotation;
-
+currentRotation+=rotation;
 wheel.style.transform=`rotate(${currentRotation}deg)`;
 
 let newPlayers={...data.players};
@@ -310,8 +284,8 @@ specialCount:prize.value==500000
 setTimeout(()=>{
 if(prize.value==500000){
 winSound.play();
-wheel.style.animation = "zoomWin 0.6s";
-setTimeout(()=>wheel.style.animation="",600); 
+wheel.style.animation="zoomWin 0.6s";
+setTimeout(()=>wheel.style.animation="",600);
 launchFireworks();
 alert("🎉 CHÚC MỪNG "+name+" TRÚNG 500K 🎉");
 }else{
@@ -320,7 +294,6 @@ alert(name+" trúng "+prize.text);
 },4000);
 
 });
-
 }catch(err){
 alert(err);
 }
@@ -328,27 +301,7 @@ alert(err);
 setTimeout(()=>btn.disabled=false,4000);
 }
 
-function launchFireworks(){
-  const duration = 4000;
-  const end = Date.now() + duration;
-
-  const interval = setInterval(function() {
-    confetti({
-      particleCount: 100,
-      spread: 160,
-      origin: {
-        x: Math.random(),
-        y: Math.random() - 0.2
-      }
-    });
-
-    if (Date.now() > end) {
-      clearInterval(interval);
-    }
-  }, 250);
-}
-  
-/* RESET */
+/* ===== RESET ===== */
 async function resetGame(){
 const pass=prompt("Nhập mật khẩu reset:");
 if(pass!==resetPassword){
@@ -363,22 +316,29 @@ specialCount:0
 });
 
 currentRotation=0;
-wheel.style.transform="rotate(0deg)";
+wheel.style.transform="rotate(-90deg)";
+fullTriggered=false;
 
-  // bật lại giao diện  
-document.getElementById("qrPanel").style.display = "block";
-document.getElementById("fullNotice").style.display = "none";
-
-const spinBtn = document.getElementById("spinBtn");
-spinBtn.disabled = false;
-spinBtn.innerText = "QUAY NGAY";
-spinBtn.style.background = "#00b894";
-spinBtn.style.cursor = "pointer";  
-fullTriggered = false;  
 alert("Đã reset game!");
 }
 
-/* QR */
+/* ===== FIREWORK ===== */
+function launchFireworks(){
+const duration=4000;
+const end=Date.now()+duration;
+const interval=setInterval(function(){
+confetti({
+particleCount:100,
+spread:160,
+origin:{x:Math.random(),y:Math.random()-0.2}
+});
+if(Date.now()>end){
+clearInterval(interval);
+}
+},250);
+}
+
+/* ===== QR ===== */
 new QRCode(document.getElementById("qr"),window.location.href);
 </script>
 
