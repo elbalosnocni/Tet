@@ -106,10 +106,9 @@ appId: "1:1035071736410:web:9beb136d88846bdcbae663"
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-console.log("Firebase connected");
 
 const prizes=[
-{text:"500k",value:500000,limit:1},
+{text:"500k",value:500000},
 {text:"200k",value:200000},
 {text:"100k",value:100000},
 {text:"50k",value:50000},
@@ -119,10 +118,23 @@ const prizes=[
 
 const totalBudget=3000000;
 const gameRef=db.collection("game").doc("main");
+const wheel=document.getElementById("wheel");
+
+
+// 🔥 VẼ BÁNH XE (chạy 1 lần)
+prizes.forEach((p,i)=>{
+  const segment=document.createElement("div");
+  segment.className="segment";
+  segment.style.transform=`rotate(${i*60}deg) skewY(-30deg)`;
+  segment.style.background=i%2==0 ? "#ffeaa7" : "#fab1a0";
+  segment.innerText=p.text;
+  wheel.appendChild(segment);
+});
+
 
 async function init(){
 const snap=await gameRef.get();
-if(!snap.exists()){
+if(!snap.exists){
 await gameRef.set({
 budget:totalBudget,
 players:{},
@@ -130,11 +142,11 @@ specialCount:0
 });
 }
 }
-
 init();
 
+
 gameRef.onSnapshot((docSnap)=>{
-if(!docSnap.exists()) return;
+if(!docSnap.exists) return;
 const data=docSnap.data();
 
 document.getElementById("budget").innerText=data.budget.toLocaleString();
@@ -148,85 +160,74 @@ rankHTML+=`<div>${name}: ${value.toLocaleString()} đ</div>`;
 document.getElementById("ranking").innerHTML=rankHTML;
 });
 
+
 async function spin(){
 
-  const btn = document.getElementById("spinBtn");
-  btn.disabled = true;
+const btn=document.getElementById("spinBtn");
+btn.disabled=true;
 
-  const name = document.getElementById("name").value.trim();
-  if(!name){
-    btn.disabled = false;
-    return alert("Nhập tên!");
-  }
+const name=document.getElementById("name").value.trim();
+if(!name){
+btn.disabled=false;
+return alert("Nhập tên!");
+}
 
-  try{
-    await db.runTransaction(async (transaction) => {
-      const snap = await transaction.get(gameRef);
-      if(!snap.exists) throw "Game chưa khởi tạo!";
-      const data = snap.data();
+try{
+await db.runTransaction(async (transaction)=>{
+const snap=await transaction.get(gameRef);
+if(!snap.exists) throw "Game chưa khởi tạo!";
+const data=snap.data();
 
-      if(Object.keys(data.players).length >= 10)
-        throw "Đủ 10 người rồi!";
+if(Object.keys(data.players).length>=10)
+throw "Đủ 10 người rồi!";
 
-      if(data.players[name] !== undefined)
-        throw "Tên đã quay!";
+if(data.players[name]!==undefined)
+throw "Tên đã quay!";
 
-      let available = prizes.filter(p=>{
-        if(p.value > data.budget) return false;
-        if(p.value == 500000 && data.specialCount >= 1) return false;
-        return true;
-      });
-
-      if(available.length == 0)
-        throw "Hết ngân sách!";
-
-      let prize = available[Math.floor(Math.random()*available.length)];
-
-      let newPlayers = {...data.players};
-      newPlayers[name] = prize.value;
-
-const wheel = document.getElementById("wheel");
-
-prizes.forEach((p,i)=>{
-  const segment = document.createElement("div");
-  segment.className="segment";
-  segment.style.transform=`rotate(${i*60}deg) skewY(-30deg)`;
-  segment.style.background=i%2==0 ? "#ffeaa7" : "#fab1a0";
-  segment.innerText=p.text;
-  wheel.appendChild(segment);
+let available=prizes.filter(p=>{
+if(p.value>data.budget) return false;
+if(p.value==500000 && data.specialCount>=1) return false;
+return true;
 });
 
-      transaction.update(gameRef, {
-        players: newPlayers,
-        budget: data.budget - prize.value,
-        specialCount: prize.value == 500000
-          ? data.specialCount + 1
-          : data.specialCount
-      });
+if(available.length==0)
+throw "Hết ngân sách!";
 
-      alert(name + " trúng " + prize.text);
-    });
-  }catch(err){
-    alert(err);
-  }
+let prize=available[Math.floor(Math.random()*available.length)];
+let index=prizes.findIndex(p=>p.value==prize.value);
 
-  setTimeout(()=> btn.disabled = false, 3000);
+// 🔥 quay đúng ô trúng
+let rotate=3600 + (360 - index*60 - 30);
+wheel.style.transform=`rotate(${rotate}deg)`;
+
+
+let newPlayers={...data.players};
+newPlayers[name]=prize.value;
+
+transaction.update(gameRef,{
+players:newPlayers,
+budget:data.budget-prize.value,
+specialCount:prize.value==500000
+? data.specialCount+1
+: data.specialCount
+});
+
+setTimeout(()=>{
+alert(name+" trúng "+prize.text);
+},4000);
+
+});
+
+}catch(err){
+alert(err);
 }
-let rotate = 3600 + Math.floor(Math.random()*360);
-wheel.style.transform = `rotate(${rotate}deg)`;
 
-window.spin = spin;
-
-async function resetGame(){
-  await gameRef.set({
-    budget: totalBudget,
-    players: {},
-    specialCount: 0
-  });
+setTimeout(()=>btn.disabled=false,4000);
 }
 
+window.spin=spin;
 
-new QRCode(document.getElementById("qr"),window.location.href)
+new QRCode(document.getElementById("qr"),window.location.href);
 
 </script>
 
