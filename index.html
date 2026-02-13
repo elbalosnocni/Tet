@@ -58,11 +58,12 @@ background:conic-gradient(
 
 .pointer{
 position:absolute;
-top:180px;
+top:-10px;
 left:50%;
 transform:translateX(-50%);
-font-size:35px;
+font-size:30px;
 }
+
 
 @media(max-width:500px){
   #wheel{
@@ -85,7 +86,8 @@ font-size:35px;
 
 <input type="text" id="name" placeholder="Nhập tên"><br>
 <button id="spinBtn" onclick="spin()">QUAY NGAY</button>
-
+  
+<div style="position:relative;">
 <div id="wheel"></div>
 <div class="pointer">🔻</div>
 
@@ -212,6 +214,9 @@ let index=prizes.findIndex(p=>p.value==prize.value);
 // 🔥 quay đúng ô trúng
 let rotate = 3600 + (360 - (index*60 + 30));
 wheel.style.transform=`rotate(${rotate}deg)`;
+let currentRotation = 0;
+currentRotation += 3600 + (360 - (index*60 + 30));
+wheel.style.transform = `rotate(${currentRotation}deg)`;
 
 
 let newPlayers={...data.players};
@@ -226,7 +231,11 @@ specialCount:prize.value==500000
 });
 
 setTimeout(()=>{
-alert(name+" trúng "+prize.text);
+if(prize.value == 500000){
+  alert("🎉 CHÚC MỪNG 🎉\n" + name + " trúng 500k!!!");
+}else{
+  alert(name + " trúng " + prize.text);
+}
 },4000);
 
 });
