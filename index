@@ -81,7 +81,7 @@ font-size:35px;
 </div>
 
 <input type="text" id="name" placeholder="Nhập tên"><br>
-<button onclick="spin()">QUAY NGAY</button>
+<button id="spinBtn" onclick="spin()">QUAY NGAY</button>
 
 <div id="wheel"></div>
 <div class="pointer">🔻</div>
