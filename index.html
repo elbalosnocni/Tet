@@ -124,27 +124,46 @@ const gameRef=db.collection("game").doc("main");
 const wheel=document.getElementById("wheel");
 
 let currentRotation=0;
-const resetPassword="truong2026";
+const resetPassword="vtc";
 
 /* vẽ chữ */
-prizes.forEach((p,i)=>{
-const angle=i*60+30;
-  
-const label=document.createElement("div");
-label.style.position="absolute";
-label.style.left="50%";
-label.style.top="50%";
-label.style.width="70px";
-label.style.textAlign="center";
-label.style.fontWeight="bold";
-label.style.fontSize = "14px";
-label.style.transformOrigin="0 0";
-label.style.writingMode = "horizontal-tb";  
-label.style.transform =
-`rotate(${angle}deg) translate(110px)`;
-label.innerText=p.text;
-wheel.appendChild(label);
+/* vẽ chữ nằm đúng giữa tam giác */
+const wheelSize = wheel.offsetWidth;
+const radius = wheelSize / 2;
+const textRadius = radius * 0.6; // 60% là cân nhất
+
+prizes.forEach((p, i) => {
+
+  const angle = i * 60 + 30;
+
+  const label = document.createElement("div");
+  label.style.position = "absolute";
+  label.style.left = "50%";
+  label.style.top = "50%";
+  label.style.width = "100px";
+  label.style.marginLeft = "-50px";
+  label.style.marginTop = "-12px";
+  label.style.textAlign = "center";
+  label.style.fontWeight = "bold";
+  label.style.fontSize = "15px";
+  label.style.pointerEvents = "none";
+  label.style.color = "#b30000";
+  label.style.textShadow = "1px 1px 2px #fff";
+
+  if (p.text === "500k") {
+    label.style.color = "gold";
+    label.style.fontSize = "18px";
+    label.style.textShadow = "0 0 10px gold";
+  }
+
+  label.style.transform =
+    `rotate(${angle}deg) translate(0,-${textRadius}px) rotate(-${angle}deg)`;
+
+  label.innerText = p.text;
+
+  wheel.appendChild(label);
 });
+
 
 /* init */
 async function init(){
