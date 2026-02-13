@@ -183,6 +183,7 @@ alert(name+" trúng "+prize.text);
 
 new QRCode(document.getElementById("qr"),window.location.href);
 
+window.spin = spin;
 </script>
 
 </body>
