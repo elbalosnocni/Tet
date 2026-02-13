@@ -130,7 +130,7 @@ const resetPassword="vtc";
 /* vẽ chữ nằm đúng giữa tam giác */
 const wheelSize = wheel.offsetWidth;
 const radius = wheelSize / 2;
-const textRadius = radius * 0.6; // 60% là cân nhất
+const textRadius = radius * 0.55; // 55% là cân nhất
 
 prizes.forEach((p, i) => {
 
@@ -157,7 +157,7 @@ prizes.forEach((p, i) => {
   }
 
   label.style.transform =
-    `rotate(${angle}deg) translate(0,-${textRadius}px) rotate(-${angle}deg)`;
+  `rotate(${angle}deg) translateY(-${textRadius}px) rotate(-${angle}deg)`;
 
   label.innerText = p.text;
 
