@@ -114,17 +114,32 @@ const prizes=[
 const totalBudget=3000000;
 const gameRef=db.collection("game").doc("main");
 const wheel = document.getElementById("wheel");
+const radius = 130; // khoảng cách chữ từ tâm
 
 prizes.forEach((p,i)=>{
+  const angle = i * 60 + 30; // giữa mỗi ô
+
   const label = document.createElement("div");
-  label.style.position="absolute";
-  label.style.left="50%";
-  label.style.top="50%";
-  label.style.transform=`rotate(${i*60+30}deg) translate(120px) rotate(-${i*60+30}deg)`;
-  label.style.fontWeight="bold";
-  label.innerText=p.text;
+  label.style.position = "absolute";
+  label.style.left = "50%";
+  label.style.top = "50%";
+  label.style.width = "80px";
+  label.style.textAlign = "center";
+  label.style.fontSize = "14px";
+  label.style.fontWeight = "bold";
+  label.style.transform =
+    `rotate(${angle}deg) translate(${radius}px) rotate(-${angle}deg)`;
+  label.innerText = p.text;
+
   wheel.appendChild(label);
 });
+
+@media(max-width:500px){
+  #wheel{
+    width:280px;
+    height:280px;
+  }
+};
 
 // 🔥 VẼ BÁNH XE (chạy 1 lần)
 prizes.forEach((p,i)=>{
