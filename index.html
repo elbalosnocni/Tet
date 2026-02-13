@@ -13,9 +13,9 @@ margin:0;
 font-family:Arial, sans-serif;
 text-align:center;
 background:linear-gradient(135deg,#a8edea,#fed6e3);
-color:#333;
 }
-h1{margin-top:20px;font-size:32px;}
+
+h1{margin-top:20px;}
 
 .panel{
 background:white;
@@ -37,9 +37,11 @@ cursor:pointer;
 margin:5px;
 }
 
+button:hover{opacity:0.9;}
+
 #wheel{
-width:350px;
-height:350px;
+width:320px;
+height:320px;
 margin:20px auto;
 border-radius:50%;
 border:10px solid #f1c40f;
@@ -55,23 +57,20 @@ background:conic-gradient(
 );
 }
 
-
 .pointer{
 position:absolute;
-top:-10px;
+top:-15px;
 left:50%;
 transform:translateX(-50%);
-font-size:30px;
+font-size:28px;
 }
 
-
 @media(max-width:500px){
-  #wheel{
-    width:280px;
-    height:280px;
-  }
-};
-  
+#wheel{
+width:280px;
+height:280px;
+}
+}
 </style>
 </head>
 
@@ -86,10 +85,12 @@ font-size:30px;
 
 <input type="text" id="name" placeholder="Nhập tên"><br>
 <button id="spinBtn" onclick="spin()">QUAY NGAY</button>
-  
+<button onclick="resetGame()">RESET</button>
+
 <div style="position:relative;">
 <div id="wheel"></div>
 <div class="pointer">🔻</div>
+</div>
 
 <div class="panel">
 <h3>🏆 Bảng xếp hạng</h3>
@@ -101,12 +102,9 @@ font-size:30px;
 
 <script>
 const firebaseConfig = {
-apiKey: "AIzaSyAChGYSzBmFDm5QV0y2KvYqAZlt144zZxg",
-authDomain: "tet-gia-toc-ho-truong.firebaseapp.com",
-projectId: "tet-gia-toc-ho-truong",
-storageBucket: "tet-gia-toc-ho-truong.firebasestorage.app",
-messagingSenderId: "1035071736410",
-appId: "1:1035071736410:web:9beb136d88846bdcbae663"
+apiKey: "YOUR_KEY",
+authDomain: "YOUR_DOMAIN",
+projectId: "YOUR_PROJECT",
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -120,33 +118,32 @@ const prizes=[
 {text:"20k",value:20000},
 {text:"Chúc may mắn",value:0}
 ];
-  
+
 const totalBudget=3000000;
 const gameRef=db.collection("game").doc("main");
+const wheel=document.getElementById("wheel");
 
-  const wheel = document.getElementById("wheel");
-const radius = 120;
+let currentRotation=0;
+const resetPassword="truong2026";
 
+/* vẽ chữ */
 prizes.forEach((p,i)=>{
-  const angle = i * 60 + 30;
-
-  const label = document.createElement("div");
-  label.style.position = "absolute";
-  label.style.left = "50%";
-  label.style.top = "50%";
-  label.style.width = "80px";
-  label.style.textAlign = "center";
-  label.style.fontSize = "14px";
-  label.style.fontWeight = "bold";
-  label.style.transformOrigin = "0 0";
-  label.style.transform =
-    `rotate(${angle}deg) translate(${radius}px) rotate(-${angle}deg)`;
-
-  label.innerText = p.text;
-
-  wheel.appendChild(label);
+const angle=i*60+30;
+const label=document.createElement("div");
+label.style.position="absolute";
+label.style.left="50%";
+label.style.top="50%";
+label.style.width="80px";
+label.style.textAlign="center";
+label.style.fontWeight="bold";
+label.style.transformOrigin="0 0";
+label.style.transform=
+`rotate(${angle}deg) translate(110px) rotate(-${angle}deg)`;
+label.innerText=p.text;
+wheel.appendChild(label);
 });
 
+/* init */
 async function init(){
 const snap=await gameRef.get();
 if(!snap.exists){
@@ -159,12 +156,13 @@ specialCount:0
 }
 init();
 
-
+/* realtime */
 gameRef.onSnapshot((docSnap)=>{
 if(!docSnap.exists) return;
 const data=docSnap.data();
 
-document.getElementById("budget").innerText=data.budget.toLocaleString();
+document.getElementById("budget").innerText=
+data.budget.toLocaleString();
 
 let rankHTML="";
 Object.entries(data.players)
@@ -175,7 +173,7 @@ rankHTML+=`<div>${name}: ${value.toLocaleString()} đ</div>`;
 document.getElementById("ranking").innerHTML=rankHTML;
 });
 
-
+/* spin */
 async function spin(){
 
 const btn=document.getElementById("spinBtn");
@@ -190,7 +188,6 @@ return alert("Nhập tên!");
 try{
 await db.runTransaction(async (transaction)=>{
 const snap=await transaction.get(gameRef);
-if(!snap.exists) throw "Game chưa khởi tạo!";
 const data=snap.data();
 
 if(Object.keys(data.players).length>=10)
@@ -211,13 +208,8 @@ throw "Hết ngân sách!";
 let prize=available[Math.floor(Math.random()*available.length)];
 let index=prizes.findIndex(p=>p.value==prize.value);
 
-// 🔥 quay đúng ô trúng
-let rotate = 3600 + (360 - (index*60 + 30));
-wheel.style.transform=`rotate(${rotate}deg)`;
-let currentRotation = 0;
 currentRotation += 3600 + (360 - (index*60 + 30));
-wheel.style.transform = `rotate(${currentRotation}deg)`;
-
+wheel.style.transform=`rotate(${currentRotation}deg)`;
 
 let newPlayers={...data.players};
 newPlayers[name]=prize.value;
@@ -231,10 +223,10 @@ specialCount:prize.value==500000
 });
 
 setTimeout(()=>{
-if(prize.value == 500000){
-  alert("🎉 CHÚC MỪNG 🎉\n" + name + " trúng 500k!!!");
+if(prize.value==500000){
+alert("🎉 CHÚC MỪNG "+name+" TRÚNG 500K 🎉");
 }else{
-  alert(name + " trúng " + prize.text);
+alert(name+" trúng "+prize.text);
 }
 },4000);
 
@@ -247,10 +239,27 @@ alert(err);
 setTimeout(()=>btn.disabled=false,4000);
 }
 
-window.spin=spin;
+/* RESET */
+async function resetGame(){
+const pass=prompt("Nhập mật khẩu reset:");
+if(pass!==resetPassword){
+alert("Sai mật khẩu!");
+return;
+}
 
+await gameRef.set({
+budget:totalBudget,
+players:{},
+specialCount:0
+});
+
+currentRotation=0;
+wheel.style.transform="rotate(0deg)";
+alert("Đã reset game!");
+}
+
+/* QR */
 new QRCode(document.getElementById("qr"),window.location.href);
-
 </script>
 
 </body>
