@@ -90,6 +90,8 @@ height:280px;
 <div style="position:relative;">
 <div id="wheel"></div>
 <div class="pointer">🔻</div>
+<div id="fullNotice" style="display:none; font-weight:bold; color:red; margin-top:10px;">
+🎉 Đã đủ 10 người tham gia 🎉
 </div>
 
 <div class="panel">
@@ -183,14 +185,19 @@ init();
 gameRef.onSnapshot((docSnap)=>{
 if(!docSnap.exists) return;
 const data=docSnap.data();
+
 const playerCount = Object.keys(data.players).length;
 const qrPanel = document.getElementById("qrPanel");
+const notice = document.getElementById("fullNotice");
 
 if (playerCount >= 10) {
   qrPanel.style.display = "none";
+  notice.style.display = "block";
 } else {
   qrPanel.style.display = "block";
+  notice.style.display = "none";
 }
+
 document.getElementById("budget").innerText=
 data.budget.toLocaleString();
 
