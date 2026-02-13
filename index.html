@@ -141,7 +141,7 @@ const totalBudget=3000000;
 const gameRef=db.collection("game").doc("main");
 const wheel=document.getElementById("wheel");
 
-let currentRotation=0;
+let currentRotation=-90;
 const resetPassword="vtc";
 let fullTriggered=false;
 
@@ -265,6 +265,7 @@ let index=prizes.findIndex(p=>p.value==prize.value);
 
 const segmentAngle=360/prizes.length;
 const targetAngle=index*segmentAngle+segmentAngle/2;
+// vì bánh xe bắt đầu -90deg
 const rotation=3600+(360-targetAngle);
 
 currentRotation+=rotation;
