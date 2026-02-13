@@ -42,24 +42,19 @@ width:350px;
 height:350px;
 margin:20px auto;
 border-radius:50%;
-border:8px solid #f1c40f;
-transition: transform 4s cubic-bezier(.17,.67,.83,.67);
+border:10px solid #f1c40f;
 position:relative;
-overflow:hidden;
+transition: transform 4s cubic-bezier(.17,.67,.83,.67);
+background:conic-gradient(
+#ffeaa7 0deg 60deg,
+#fab1a0 60deg 120deg,
+#ffeaa7 120deg 180deg,
+#fab1a0 180deg 240deg,
+#ffeaa7 240deg 300deg,
+#fab1a0 300deg 360deg
+);
 }
 
-.segment{
-position:absolute;
-width:50%;
-height:50%;
-transform-origin:100% 100%;
-left:50%;
-top:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:bold;
-}
 
 .pointer{
 position:absolute;
@@ -115,11 +110,21 @@ const prizes=[
 {text:"20k",value:20000},
 {text:"Chúc may mắn",value:0}
 ];
-
+  
 const totalBudget=3000000;
 const gameRef=db.collection("game").doc("main");
-const wheel=document.getElementById("wheel");
+const wheel = document.getElementById("wheel");
 
+prizes.forEach((p,i)=>{
+  const label = document.createElement("div");
+  label.style.position="absolute";
+  label.style.left="50%";
+  label.style.top="50%";
+  label.style.transform=`rotate(${i*60+30}deg) translate(120px) rotate(-${i*60+30}deg)`;
+  label.style.fontWeight="bold";
+  label.innerText=p.text;
+  wheel.appendChild(label);
+});
 
 // 🔥 VẼ BÁNH XE (chạy 1 lần)
 prizes.forEach((p,i)=>{
@@ -197,7 +202,7 @@ let prize=available[Math.floor(Math.random()*available.length)];
 let index=prizes.findIndex(p=>p.value==prize.value);
 
 // 🔥 quay đúng ô trúng
-let rotate=3600 + (360 - index*60 - 30);
+let rotate = 3600 + (360 - (index*60 + 30));
 wheel.style.transform=`rotate(${rotate}deg)`;
 
 
