@@ -6,6 +6,7 @@
 <title>TẾT GIA TỘC HỌ TRƯƠNG 2026</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
 body{
@@ -13,7 +14,7 @@ margin:0;
 font-family:Arial, sans-serif;
 text-align:center;
 background:linear-gradient(135deg,#a8edea,#fed6e3);
-}
+}  
 
 h1{margin-top:20px;}
 
@@ -79,11 +80,19 @@ height:280px;
   75%{transform:translateX(-5px)}
   100%{transform:translateX(0)}
 }
+
+@keyframes zoomWin {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
   
 </style>
 </head>
 
 <body>
+<audio id="spinSound" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"></audio>
+<audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
 
 <h1>🧧 TẾT GIA TỘC HỌ TRƯƠNG 2026 🧧</h1>
 
@@ -118,6 +127,9 @@ authDomain: "tet-gia-toc-ho-truong.firebaseapp.com",
 projectId: "tet-gia-toc-ho-truong",
 };
 
+const spinSound = document.getElementById("spinSound");
+const winSound = document.getElementById("winSound");
+  
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
@@ -239,6 +251,9 @@ document.getElementById("ranking").innerHTML=rankHTML;
 /* spin */
 async function spin(){
 
+spinSound.currentTime = 0;
+spinSound.play();
+
 const btn=document.getElementById("spinBtn");
 btn.disabled=true;
 
@@ -287,6 +302,10 @@ specialCount:prize.value==500000
 
 setTimeout(()=>{
 if(prize.value==500000){
+winSound.play();
+wheel.style.animation = "zoomWin 0.6s";
+setTimeout(()=>wheel.style.animation="",600); 
+launchFireworks();
 alert("🎉 CHÚC MỪNG "+name+" TRÚNG 500K 🎉");
 }else{
 alert(name+" trúng "+prize.text);
@@ -302,6 +321,26 @@ alert(err);
 setTimeout(()=>btn.disabled=false,4000);
 }
 
+function launchFireworks(){
+  const duration = 4000;
+  const end = Date.now() + duration;
+
+  const interval = setInterval(function() {
+    confetti({
+      particleCount: 100,
+      spread: 160,
+      origin: {
+        x: Math.random(),
+        y: Math.random() - 0.2
+      }
+    });
+
+    if (Date.now() > end) {
+      clearInterval(interval);
+    }
+  }, 250);
+}
+  
 /* RESET */
 async function resetGame(){
 const pass=prompt("Nhập mật khẩu reset:");
