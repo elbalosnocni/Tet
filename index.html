@@ -78,9 +78,9 @@ height:280px;
 
 <h1>🧧 TẾT GIA TỘC HỌ TRƯƠNG 2026 🧧</h1>
 
-<div class="panel">
-💰 Ngân sách còn: <b id="budget">3.000.000</b> đ
-<div id="qr"></div>
+<div class="panel" id="qrPanel">
+  💰 Ngân sách còn: <b id="budget">3.000.000</b> đ
+  <div id="qr"></div>
 </div>
 
 <input type="text" id="name" placeholder="Nhập tên"><br>
@@ -183,7 +183,14 @@ init();
 gameRef.onSnapshot((docSnap)=>{
 if(!docSnap.exists) return;
 const data=docSnap.data();
+const playerCount = Object.keys(data.players).length;
+const qrPanel = document.getElementById("qrPanel");
 
+if (playerCount >= 10) {
+  qrPanel.style.display = "none";
+} else {
+  qrPanel.style.display = "block";
+}
 document.getElementById("budget").innerText=
 data.budget.toLocaleString();
 
