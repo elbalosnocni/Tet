@@ -151,10 +151,11 @@ prizes.forEach((p, i) => {
   label.style.textShadow = "1px 1px 2px #fff";
 
   if (p.text === "500k") {
-    label.style.color = "gold";
-    label.style.fontSize = "18px";
-    label.style.textShadow = "0 0 10px gold";
-  }
+  label.style.color = "#c0392b";        // đỏ đậm
+  label.style.fontSize = "20px";
+  label.style.fontWeight = "900";
+  label.style.textShadow = "2px 2px 0 gold";
+}
 
   label.style.transform =
   `rotate(${angle}deg) translateY(-${textRadius}px) rotate(-${angle}deg)`;
