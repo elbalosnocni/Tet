@@ -265,7 +265,7 @@ let index=prizes.findIndex(p=>p.value==prize.value);
 
 const segmentAngle=360/prizes.length;
 const targetAngle=index*segmentAngle+segmentAngle/2;
-const rotation=3600+(270-targetAngle);
+const rotation=3600+(360-targetAngle);
 
 currentRotation+=rotation;
 wheel.style.transform=`rotate(${currentRotation}deg)`;
@@ -315,7 +315,7 @@ players:{},
 specialCount:0
 });
 
-currentRotation=0;
+currentRotation=-90;
 wheel.style.transform="rotate(-90deg)";
 fullTriggered=false;
 
