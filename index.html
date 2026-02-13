@@ -56,7 +56,6 @@ background:conic-gradient(
 #ffeaa7 240deg 300deg,
 #fab1a0 300deg 360deg
 );
-transform: rotate(-90deg);
 }
 
 .pointer{
@@ -141,7 +140,7 @@ const totalBudget=3000000;
 const gameRef=db.collection("game").doc("main");
 const wheel=document.getElementById("wheel");
 
-let currentRotation=-90;
+let currentRotation=0;
 const resetPassword="vtc";
 let fullTriggered=false;
 
@@ -263,10 +262,14 @@ throw "Hết ngân sách!";
 let prize=available[Math.floor(Math.random()*available.length)];
 let index=prizes.findIndex(p=>p.value==prize.value);
 
-const segmentAngle=360/prizes.length;
-const targetAngle=index*segmentAngle+segmentAngle/2;
-// vì bánh xe bắt đầu -90deg
-const rotation=3600+(360-targetAngle);
+const segmentAngle = 360 / prizes.length;
+const targetAngle = index * segmentAngle + segmentAngle / 2;
+
+// bù lại góc -90deg ban đầu
+const finalAngle = 360 - targetAngle + 90;
+
+const rotation = 3600 + (360 - targetAngle);
+
 
 currentRotation+=rotation;
 wheel.style.transform=`rotate(${currentRotation}deg)`;
