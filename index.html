@@ -47,7 +47,7 @@ margin:20px auto;
 border-radius:50%;
 border:10px solid #f1c40f;
 position:relative;
-transition: transform 4s cubic-bezier(.17,.67,.83,.67);
+transition: transform 4s cubic-bezier(.25,1,.5,1);
 background:conic-gradient(
 #ffeaa7 0deg 60deg,
 #fab1a0 60deg 120deg,
@@ -286,7 +286,14 @@ throw "Hết ngân sách!";
 let prize=available[Math.floor(Math.random()*available.length)];
 let index=prizes.findIndex(p=>p.value==prize.value);
 
-currentRotation += 3600 + (360 - (index*60 + 30));
+const segmentAngle = 360 / prizes.length;   // 60 độ
+const targetAngle = index * segmentAngle + segmentAngle / 2;
+
+// bù thêm 90 độ vì mũi tên ở trên (12 giờ)
+const rotation = 3600 + (270 - targetAngle);
+
+currentRotation += rotation;
+
 wheel.style.transform=`rotate(${currentRotation}deg)`;
 
 let newPlayers={...data.players};
