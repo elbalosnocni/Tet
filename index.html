@@ -63,6 +63,14 @@ left:50%;
 transform:translateX(-50%);
 font-size:35px;
 }
+
+@media(max-width:500px){
+  #wheel{
+    width:280px;
+    height:280px;
+  }
+};
+  
 </style>
 </head>
 
@@ -113,11 +121,12 @@ const prizes=[
   
 const totalBudget=3000000;
 const gameRef=db.collection("game").doc("main");
-const wheel = document.getElementById("wheel");
-const radius = 130; // khoảng cách chữ từ tâm
+
+  const wheel = document.getElementById("wheel");
+const radius = 120;
 
 prizes.forEach((p,i)=>{
-  const angle = i * 60 + 30; // giữa mỗi ô
+  const angle = i * 60 + 30;
 
   const label = document.createElement("div");
   label.style.position = "absolute";
@@ -127,30 +136,14 @@ prizes.forEach((p,i)=>{
   label.style.textAlign = "center";
   label.style.fontSize = "14px";
   label.style.fontWeight = "bold";
+  label.style.transformOrigin = "0 0";
   label.style.transform =
     `rotate(${angle}deg) translate(${radius}px) rotate(-${angle}deg)`;
+
   label.innerText = p.text;
 
   wheel.appendChild(label);
 });
-
-@media(max-width:500px){
-  #wheel{
-    width:280px;
-    height:280px;
-  }
-};
-
-// 🔥 VẼ BÁNH XE (chạy 1 lần)
-prizes.forEach((p,i)=>{
-  const segment=document.createElement("div");
-  segment.className="segment";
-  segment.style.transform=`rotate(${i*60}deg) skewY(-30deg)`;
-  segment.style.background=i%2==0 ? "#ffeaa7" : "#fab1a0";
-  segment.innerText=p.text;
-  wheel.appendChild(segment);
-});
-
 
 async function init(){
 const snap=await gameRef.get();
