@@ -71,6 +71,15 @@ width:280px;
 height:280px;
 }
 }
+
+@keyframes shake {
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-5px)}
+  50%{transform:translateX(5px)}
+  75%{transform:translateX(-5px)}
+  100%{transform:translateX(0)}
+}
+  
 </style>
 </head>
 
@@ -126,10 +135,12 @@ const gameRef=db.collection("game").doc("main");
 const wheel=document.getElementById("wheel");
 
 let currentRotation=0;
-const resetPassword="vtc";
+const resetPassword="vtc"; 
+let fullTriggered = false;
 
 /* vẽ chữ */
 /* vẽ chữ nằm đúng giữa tam giác */
+window.onload = function(){
 const wheelSize = wheel.offsetWidth;
 const radius = wheelSize / 2;
 const textRadius = radius * 0.55; // 55% là cân nhất
@@ -163,10 +174,9 @@ prizes.forEach((p, i) => {
   `rotate(${angle}deg) translateY(-${textRadius}px) rotate(-${angle}deg)`;
 
   label.innerText = p.text;
-
   wheel.appendChild(label);
 });
-
+};
 
 /* init */
 async function init(){
@@ -189,13 +199,29 @@ const data=docSnap.data();
 const playerCount = Object.keys(data.players).length;
 const qrPanel = document.getElementById("qrPanel");
 const notice = document.getElementById("fullNotice");
+const spinBtn = document.getElementById("spinBtn");  
 
+  if (playerCount === 10 && !fullTriggered) {
+  fullTriggered = true;
+  spinBtn.style.animation = "none";
+void spinBtn.offsetWidth; // reset animation  
+  spinBtn.style.animation = "shake 0.5s";
+}
+  
 if (playerCount >= 10) {
   qrPanel.style.display = "none";
   notice.style.display = "block";
+  spinBtn.disabled = true;
+  spinBtn.innerText = "ĐÃ ĐỦ 10 NGƯỜI";
+  spinBtn.style.background = "#999";
+  spinBtn.style.cursor = "not-allowed";
 } else {
   qrPanel.style.display = "block";
   notice.style.display = "none";
+  spinBtn.disabled = false;
+  spinBtn.innerText = "QUAY NGAY";
+  spinBtn.style.background = "#00b894";
+  spinBtn.style.cursor = "pointer";
 }
 
 document.getElementById("budget").innerText=
@@ -292,6 +318,17 @@ specialCount:0
 
 currentRotation=0;
 wheel.style.transform="rotate(0deg)";
+
+  // bật lại giao diện  
+document.getElementById("qrPanel").style.display = "block";
+document.getElementById("fullNotice").style.display = "none";
+
+const spinBtn = document.getElementById("spinBtn");
+spinBtn.disabled = false;
+spinBtn.innerText = "QUAY NGAY";
+spinBtn.style.background = "#00b894";
+spinBtn.style.cursor = "pointer";  
+fullTriggered = false;  
 alert("Đã reset game!");
 }
 
