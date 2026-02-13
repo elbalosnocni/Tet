@@ -137,8 +137,9 @@ label.style.width="80px";
 label.style.textAlign="center";
 label.style.fontWeight="bold";
 label.style.transformOrigin="0 0";
-label.style.transform=
-`rotate(${angle}deg) translate(110px) rotate(-${angle}deg)`;
+label.style.writingMode = "horizontal-tb";  
+label.style.transform =
+`rotate(${angle}deg) translate(110px)`;
 label.innerText=p.text;
 wheel.appendChild(label);
 });
