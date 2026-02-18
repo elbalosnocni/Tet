@@ -14,9 +14,7 @@ margin:0;
 font-family:Arial, sans-serif;
 text-align:center;
 background:linear-gradient(135deg,#a8edea,#fed6e3);
-}  
-
-h1{margin-top:20px;}
+}
 
 .panel{
 background:white;
@@ -38,8 +36,6 @@ cursor:pointer;
 margin:5px;
 }
 
-button:hover{opacity:0.9;}
-
 #wheel{
 width:320px;
 height:320px;
@@ -56,6 +52,7 @@ background:conic-gradient(
 #ffeaa7 240deg 300deg,
 #fab1a0 300deg 360deg
 );
+transform: rotate(-90deg);
 }
 
 .pointer{
@@ -65,32 +62,14 @@ left:50%;
 transform:translateX(-50%);
 font-size:28px;
 }
-
-@keyframes shake {
-0%{transform:translateX(0)}
-25%{transform:translateX(-5px)}
-50%{transform:translateX(5px)}
-75%{transform:translateX(-5px)}
-100%{transform:translateX(0)}
-}
-
-@keyframes zoomWin {
-0% { transform: scale(1); }
-50% { transform: scale(1.2); }
-100% { transform: scale(1); }
-}
 </style>
 </head>
-
 <body>
-
-<audio id="spinSound" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"></audio>
-<audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
 
 <h1>🧧 HÁI LỘC ĐẦU XUÂN 2026 🧧</h1>
 
-<div class="panel" id="qrPanel">
-💰 Ngân sách còn: <b id="budget">3.000.000</b> đ
+<div class="panel">
+💰 Ngân sách còn: <b id="budget">1.000.000</b> đ
 <div id="qr"></div>
 </div>
 
@@ -101,9 +80,6 @@ font-size:28px;
 <div style="position:relative;">
 <div id="wheel"></div>
 <div class="pointer">🔻</div>
-<div id="fullNotice" style="display:none; font-weight:bold; color:red; margin-top:10px;">
-🎉 Đã đủ 10 người tham gia 🎉
-</div>
 </div>
 
 <div class="panel">
@@ -124,9 +100,6 @@ projectId: "tet-gia-toc-ho-truong",
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const spinSound = document.getElementById("spinSound");
-const winSound = document.getElementById("winSound");
-
 const prizes=[
 {text:"500k",value:500000},
 {text:"200k",value:200000},
@@ -140,9 +113,8 @@ const totalBudget=1000000;
 const gameRef=db.collection("game").doc("main");
 const wheel=document.getElementById("wheel");
 
-let currentRotation=0;
+let currentRotation=-90;
 const resetPassword="vtc";
-let fullTriggered=false;
 
 /* ===== VẼ CHỮ ===== */
 window.onload=function(){
@@ -165,12 +137,6 @@ label.style.fontSize="15px";
 label.style.pointerEvents="none";
 label.style.color="#b30000";
 
-if(p.value==500000){
-label.style.fontSize="20px";
-label.style.fontWeight="900";
-label.style.textShadow="2px 2px 0 gold";
-}
-
 label.style.transform=
 `rotate(${angle}deg) translateY(-${textRadius}px) rotate(-${angle}deg)`;
 
@@ -184,9 +150,13 @@ async function init(){
 const snap=await gameRef.get();
 if(!snap.exists){
 await gameRef.set({
-budget:totalBudget,
-players:{},
-specialCount:0
+  budget: totalBudget,
+  players: {},
+  prizeCount:{
+    500000:0,
+    200000:0,
+    100000:0
+  }
 });
 }
 }
@@ -196,21 +166,6 @@ init();
 gameRef.onSnapshot((doc)=>{
 if(!doc.exists) return;
 const data=doc.data();
-
-const playerCount=Object.keys(data.players).length;
-const spinBtn=document.getElementById("spinBtn");
-
-if(playerCount>=10){
-document.getElementById("qrPanel").style.display="none";
-document.getElementById("fullNotice").style.display="block";
-spinBtn.disabled=true;
-spinBtn.innerText="ĐÃ ĐỦ 10 NGƯỜI";
-}else{
-document.getElementById("qrPanel").style.display="block";
-document.getElementById("fullNotice").style.display="none";
-spinBtn.disabled=false;
-spinBtn.innerText="QUAY NGAY";
-}
 
 document.getElementById("budget").innerText=
 data.budget.toLocaleString();
@@ -227,9 +182,6 @@ document.getElementById("ranking").innerHTML=rankHTML;
 /* ===== SPIN ===== */
 async function spin(){
 
-spinSound.currentTime=0;
-spinSound.play();
-
 const btn=document.getElementById("spinBtn");
 btn.disabled=true;
 
@@ -244,15 +196,15 @@ await db.runTransaction(async(transaction)=>{
 const snap=await transaction.get(gameRef);
 const data=snap.data();
 
-if(Object.keys(data.players).length>=10)
-throw "Đủ 10 người rồi!";
-
 if(data.players[name]!==undefined)
 throw "Tên đã quay!";
 
 let available=prizes.filter(p=>{
 if(p.value>data.budget) return false;
-if(p.value==500000 && data.specialCount>=1) return false;
+if(
+ (p.value==500000 || p.value==200000 || p.value==100000)
+ && data.prizeCount?.[p.value]>=1
+) return false;
 return true;
 });
 
@@ -265,36 +217,30 @@ let index=prizes.findIndex(p=>p.value==prize.value);
 const segmentAngle = 360 / prizes.length;
 const targetAngle = index * segmentAngle + segmentAngle / 2;
 
-// bù lại góc -90deg ban đầu
-const finalAngle = 360 - targetAngle + 90;
-
 const rotation = 3600 + (360 - targetAngle);
+currentRotation = -90 + rotation;
 
-
-currentRotation+=rotation;
 wheel.style.transform=`rotate(${currentRotation}deg)`;
 
 let newPlayers={...data.players};
 newPlayers[name]=prize.value;
 
+let newPrizeCount=data.prizeCount || {
+500000:0,200000:0,100000:0
+};
+
+if(prize.value==500000 || prize.value==200000 || prize.value==100000){
+newPrizeCount[prize.value]+=1;
+}
+
 transaction.update(gameRef,{
 players:newPlayers,
 budget:data.budget-prize.value,
-specialCount:prize.value==500000
-? data.specialCount+1
-: data.specialCount
+prizeCount:newPrizeCount
 });
 
 setTimeout(()=>{
-if(prize.value==500000){
-winSound.play();
-wheel.style.animation="zoomWin 0.6s";
-setTimeout(()=>wheel.style.animation="",600);
-launchFireworks();
-alert("🎉 CHÚC MỪNG "+name+" TRÚNG 500K 🎉");
-}else{
 alert(name+" trúng "+prize.text);
-}
 },4000);
 
 });
@@ -316,30 +262,16 @@ return;
 await gameRef.set({
 budget:totalBudget,
 players:{},
-specialCount:0
+prizeCount:{
+500000:0,
+200000:0,
+100000:0
+}
 });
 
 currentRotation=-90;
 wheel.style.transform="rotate(-90deg)";
-fullTriggered=false;
-
 alert("Đã reset game!");
-}
-
-/* ===== FIREWORK ===== */
-function launchFireworks(){
-const duration=4000;
-const end=Date.now()+duration;
-const interval=setInterval(function(){
-confetti({
-particleCount:100,
-spread:160,
-origin:{x:Math.random(),y:Math.random()-0.2}
-});
-if(Date.now()>end){
-clearInterval(interval);
-}
-},250);
 }
 
 /* ===== QR ===== */
