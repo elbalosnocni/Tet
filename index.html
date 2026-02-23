@@ -44,16 +44,9 @@ const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 const spinBtn = document.getElementById("spinBtn");
 
-const prizes = [
-  "500k",
-  "50k",
-  "20k",
-  "100k",
-  "10k",
-  "200k"
-];
-
+const prizes = ["500k","50k","20k","100k","10k","200k"];
 const colors = ["#f39c12","#e74c3c"];
+
 const centerX = 200;
 const centerY = 200;
 const radius = 180;
@@ -63,7 +56,6 @@ let spinning = false;
 
 function drawWheel(angle=0){
   const arc = (2*Math.PI)/prizes.length;
-
   ctx.clearRect(0,0,400,400);
 
   for(let i=0;i<prizes.length;i++){
@@ -87,7 +79,7 @@ function drawWheel(angle=0){
     ctx.restore();
   }
 
-  // vẽ mũi tên
+  // pointer
   ctx.fillStyle="#fff";
   ctx.beginPath();
   ctx.moveTo(centerX,20);
@@ -105,56 +97,32 @@ spinBtn.onclick = function(){
   spinBtn.disabled = true;
 
   const targetIndex = Math.floor(Math.random()*prizes.length);
-
   const arc = (2*Math.PI)/prizes.length;
 
-  // góc giữa ô trúng
   const targetAngle = targetIndex*arc + arc/2;
-
-  // mũi tên ở -90deg (trên cùng)
   const pointerAngle = -Math.PI/2;
 
-  // tính góc quay cần thiết
   let rotation = pointerAngle - targetAngle;
-
-  // thêm nhiều vòng quay
   const extra = Math.PI*2*8;
 
   const finalAngle = currentAngle + extra + rotation;
 
   animateSpin(currentAngle, finalAngle, 4000, ()=>{
-    // Sau khi animation kết thúc
-currentAngle = finalAngle % (Math.PI * 2);
+    currentAngle = finalAngle % (Math.PI*2);
 
-// Chuẩn hóa về 0 → 2PI
-let normalized = (currentAngle + Math.PI * 2) % (Math.PI * 2);
+    spinning = false;
+    spinBtn.disabled = false;
 
-const arc = (2 * Math.PI) / prizes.length;
-
-// Mũi tên ở -90 độ
-const pointer = -Math.PI / 2;
-
-// Góc thực tế đang chỉ
-let resultAngle = pointer - normalized;
-
-// Chuẩn hóa lại
-resultAngle = (resultAngle + Math.PI * 2) % (Math.PI * 2);
-
-// Tính index đúng
-const winningIndex = Math.floor(resultAngle / arc);
-
-alert("🎉 Trúng: " + prizes[winningIndex]);
-}
+    alert("🎉 Trúng: " + prizes[targetIndex]);
+  });
+};
 
 function animateSpin(start, end, duration, callback){
   const startTime = performance.now();
 
   function frame(now){
     const progress = Math.min((now-startTime)/duration,1);
-
-    // easing casino mượt
     const ease = 1 - Math.pow(1-progress,4);
-
     const angle = start + (end-start)*ease;
 
     drawWheel(angle);
