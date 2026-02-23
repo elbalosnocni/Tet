@@ -53,6 +53,8 @@ const radius = 180;
 
 let currentAngle = 0;
 let spinning = false;
+let max500kWins = 1;   // giới hạn
+let current500kWins = 0;  
 
 function drawWheel(angle=0){
   const arc = (2*Math.PI)/prizes.length;
@@ -113,7 +115,16 @@ spinBtn.onclick = function(){
 
   const arc = (2*Math.PI)/prizes.length;
 
-  const targetIndex = Math.floor(Math.random()*prizes.length);
+  let availableIndexes = prizes.map((p,i)=>i);
+
+  // Nếu đã hết lượt 500k → loại khỏi danh sách
+  if(current500kWins >= max500kWins){
+  availableIndexes = availableIndexes.filter(i => prizes[i] !== "500k");
+  }
+
+  const targetIndex = availableIndexes[
+  Math.floor(Math.random()*availableIndexes.length)
+  ];
 
   // Góc giữa của ô trúng (theo hệ vẽ)
   const targetAngle = targetIndex * arc + arc/2;
@@ -133,7 +144,10 @@ spinBtn.onclick = function(){
 
   animateSpin(currentAngle, finalAngle, 4000, ()=>{
     currentAngle = finalAngle % (Math.PI*2);
-
+ 
+    if(prizes[targetIndex] === "500k"){
+  current500kWins++;
+}
     spinning = false;
     spinBtn.disabled = false;
 
