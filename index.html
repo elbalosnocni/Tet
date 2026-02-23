@@ -30,6 +30,16 @@ button:disabled{
   opacity:0.5;
   cursor:not-allowed;
 }
+#stats{
+  margin-top:30px;
+  background:#222;
+  padding:20px;
+  width:300px;
+  margin-left:auto;
+  margin-right:auto;
+  border-radius:10px;
+  text-align:left;
+}  
 </style>
 </head>
 <body>
@@ -39,10 +49,13 @@ button:disabled{
 <br>
 <button id="spinBtn">QUAY</button>
 
+<div id="stats"></div>
+  
 <script>
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 const spinBtn = document.getElementById("spinBtn");
+const statsDiv = document.getElementById("stats");  
 
 const prizes = ["500k","50k","20k","100k","10k","200k"];
 const colors = ["#f39c12","#e74c3c"];
@@ -54,8 +67,32 @@ const radius = 180;
 let currentAngle = 0;
 let spinning = false;
 let max500kWins = 1;   // giới hạn
-let current500kWins = 0;  
+//let current500kWins = 0;  
 
+// ===== Load dữ liệu từ localStorage =====
+let stats = JSON.parse(localStorage.getItem("wheelStats")) || {
+  totalSpins:0,
+  wins:{}
+};
+
+prizes.forEach(p=>{
+  if(!stats.wins[p]) stats.wins[p]=0;
+});
+
+function saveStats(){
+  localStorage.setItem("wheelStats", JSON.stringify(stats));
+}
+
+function updateStatsUI(){
+  let html = `<b>📊 Thống kê</b><br><br>`;
+  html += `Tổng lượt quay: ${stats.totalSpins}<br><br>`;
+  prizes.forEach(p=>{
+    html += `${p}: ${stats.wins[p]} lần<br>`;
+  });
+  statsDiv.innerHTML = html;
+}
+  //////
+  
 function drawWheel(angle=0){
   const arc = (2*Math.PI)/prizes.length;
   ctx.clearRect(0,0,400,400);
@@ -118,7 +155,7 @@ spinBtn.onclick = function(){
   let availableIndexes = prizes.map((p,i)=>i);
 
   // Nếu đã hết lượt 500k → loại khỏi danh sách
-  if(current500kWins >= max500kWins){
+  if(stats.wins["500k"] >= max500kWins){
   availableIndexes = availableIndexes.filter(i => prizes[i] !== "500k");
   }
 
@@ -145,9 +182,16 @@ spinBtn.onclick = function(){
   animateSpin(currentAngle, finalAngle, 4000, ()=>{
     currentAngle = finalAngle % (Math.PI*2);
  
-    if(prizes[targetIndex] === "500k"){
-  current500kWins++;
-}
+   }
+   const prize = prizes[targetIndex]; 
+    
+   // ===== CẬP NHẬT THỐNG KÊ =====
+        stats.totalSpins++;
+    stats.wins[prize]++;
+
+    saveStats();
+    updateStatsUI();
+    // ==============================
     spinning = false;
     spinBtn.disabled = false;
 
