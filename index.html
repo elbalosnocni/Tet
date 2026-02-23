@@ -217,10 +217,16 @@ let index=prizes.findIndex(p=>p.value==prize.value);
 const segmentAngle = 360 / prizes.length;
 const targetAngle = index * segmentAngle + segmentAngle / 2;
 
-const rotation = 3600 + (360 - targetAngle);
-currentRotation = -90 + rotation;
+// góc bánh xe cần dừng (đã bù -90deg ban đầu)
+const stopAngle = 270 - targetAngle;
 
-wheel.style.transform=`rotate(${currentRotation}deg)`;
+// nhiều vòng quay cho đẹp
+const extraSpins = 360 * 10;
+
+// đặt góc tuyệt đối luôn (không cộng dồn)
+currentRotation = extraSpins + stopAngle;
+
+wheel.style.transform = `rotate(${currentRotation}deg)`;
 
 let newPlayers={...data.players};
 newPlayers[name]=prize.value;
