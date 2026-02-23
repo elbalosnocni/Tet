@@ -59,7 +59,7 @@ function drawWheel(angle=0){
   ctx.clearRect(0,0,400,400);
 
   for(let i=0;i<prizes.length;i++){
-    const start = angle + i*arc;
+    const start = -angle + i*arc;
     const end = start + arc;
 
     ctx.beginPath();
@@ -96,20 +96,23 @@ spinBtn.onclick = function(){
   spinning = true;
   spinBtn.disabled = true;
 
-  const targetIndex = Math.floor(Math.random()*prizes.length);
   const arc = (2*Math.PI)/prizes.length;
+  const targetIndex = Math.floor(Math.random()*prizes.length);
 
   const targetAngle = targetIndex*arc + arc/2;
+
+  // mũi tên ở 12h = -PI/2
   const pointerAngle = -Math.PI/2;
 
-  let rotation = pointerAngle - targetAngle;
+  // vì ta đã đảo chiều ở drawWheel (-angle)
+  let rotationNeeded = targetAngle - pointerAngle;
+
   const extra = Math.PI*2*8;
 
-  const finalAngle = currentAngle + extra + rotation;
+  const finalAngle = currentAngle + extra + rotationNeeded;
 
   animateSpin(currentAngle, finalAngle, 4000, ()=>{
     currentAngle = finalAngle % (Math.PI*2);
-
     spinning = false;
     spinBtn.disabled = false;
 
