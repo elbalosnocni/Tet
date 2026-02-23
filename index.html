@@ -143,6 +143,7 @@ ctx.stroke();
 }
 
 drawWheel();
+updateStatsUI();    
 
 spinBtn.onclick = function(){
   if(spinning) return;
@@ -174,15 +175,21 @@ spinBtn.onclick = function(){
   const absoluteStopAngle = targetAngle - pointerAngle;
 
   // Thêm nhiều vòng quay đẹp
-  const spins = Math.PI*2*8;
+const fullCircle = Math.PI*2;
+const spins = fullCircle * 8;
 
-  // 👉 Quan trọng: KHÔNG cộng delta phức tạp
-  const finalAngle = spins + absoluteStopAngle;
+// Chuẩn hóa góc hiện tại
+const normalizedCurrent = currentAngle % fullCircle;
+
+// Tính phần cần bù để dừng đúng ô
+let delta = absoluteStopAngle - normalizedCurrent;
+if(delta < 0) delta += fullCircle;
+
+const finalAngle = currentAngle + spins + delta;
 
   animateSpin(currentAngle, finalAngle, 4000, ()=>{
     currentAngle = finalAngle % (Math.PI*2);
  
-   }
    const prize = prizes[targetIndex]; 
     
    // ===== CẬP NHẬT THỐNG KÊ =====
@@ -195,7 +202,7 @@ spinBtn.onclick = function(){
     spinning = false;
     spinBtn.disabled = false;
 
-    alert("🎉 Trúng: " + prizes[targetIndex]);
+    alert("🎉 Trúng: " + prize);
   });
 };
 
