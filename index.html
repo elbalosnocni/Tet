@@ -123,11 +123,27 @@ spinBtn.onclick = function(){
   const finalAngle = currentAngle + extra + rotation;
 
   animateSpin(currentAngle, finalAngle, 4000, ()=>{
-    currentAngle = finalAngle % (Math.PI*2);
-    spinning = false;
-    spinBtn.disabled = false;
-    alert("🎉 Trúng: " + prizes[targetIndex]);
-  });
+    // Sau khi animation kết thúc
+currentAngle = finalAngle % (Math.PI * 2);
+
+// Chuẩn hóa về 0 → 2PI
+let normalized = (currentAngle + Math.PI * 2) % (Math.PI * 2);
+
+const arc = (2 * Math.PI) / prizes.length;
+
+// Mũi tên ở -90 độ
+const pointer = -Math.PI / 2;
+
+// Góc thực tế đang chỉ
+let resultAngle = pointer - normalized;
+
+// Chuẩn hóa lại
+resultAngle = (resultAngle + Math.PI * 2) % (Math.PI * 2);
+
+// Tính index đúng
+const winningIndex = Math.floor(resultAngle / arc);
+
+alert("🎉 Trúng: " + prizes[winningIndex]);
 }
 
 function animateSpin(start, end, duration, callback){
