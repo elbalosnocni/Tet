@@ -2,295 +2,156 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HÁI LỘC ĐẦU XUÂN 2026</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+<title>Casino Wheel</title>
 <style>
 body{
-margin:0;
-font-family:Arial, sans-serif;
-text-align:center;
-background:linear-gradient(135deg,#a8edea,#fed6e3);
+  text-align:center;
+  font-family:sans-serif;
+  background:#111;
+  color:#fff;
 }
 
-.panel{
-background:white;
-padding:15px;
-border-radius:15px;
-max-width:600px;
-margin:15px auto;
-box-shadow:0 0 15px rgba(0,0,0,0.1);
+canvas{
+  margin-top:20px;
 }
 
 button{
-padding:10px 20px;
-font-size:18px;
-border:none;
-border-radius:10px;
-background:#00b894;
-color:white;
-cursor:pointer;
-margin:5px;
+  margin-top:20px;
+  padding:12px 30px;
+  font-size:18px;
+  background:#f1c40f;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
 }
 
-#wheel{
-  width:320px;
-  height:320px;
-  margin:20px auto;
-  border-radius:50%;
-  border:10px solid #f1c40f;
-  position:relative;
-  transition: transform 4s cubic-bezier(.25,1,.5,1);
-  background:conic-gradient(
-    #ffeaa7 0deg 60deg,
-    #fab1a0 60deg 120deg,
-    #ffeaa7 120deg 180deg,
-    #fab1a0 180deg 240deg,
-    #ffeaa7 240deg 300deg,
-    #fab1a0 300deg 360deg
-  );
-  transform: rotate(0deg);
-}
-
-.pointer{
-position:absolute;
-top:-15px;
-left:50%;
-transform:translateX(-50%);
-font-size:28px;
+button:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
 }
 </style>
 </head>
 <body>
 
-<h1>🧧 HÁI LỘC ĐẦU XUÂN 2026🧧</h1>
-
-<div class="panel">
-💰 Ngân sách còn: <b id="budget">3.000.000</b> đ
-<div id="qr"></div>
-</div>
-
-<input type="text" id="name" placeholder="Nhập tên"><br>
-<button id="spinBtn" onclick="spin()">QUAY NGAY</button>
-<button onclick="resetGame()">RESET</button>
-
-<div style="position:relative;">
-<div id="wheel"></div>
-<div class="pointer">🔻</div>
-</div>
-
-<div class="panel">
-<h3>🏆 Bảng xếp hạng</h3>
-<div id="ranking"></div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<h2>🎰 Vòng quay Casino</h2>
+<canvas id="wheel" width="400" height="400"></canvas>
+<br>
+<button id="spinBtn">QUAY</button>
 
 <script>
-const firebaseConfig = {
-apiKey: "AIzaSyAChGYSzBmFDm5QV0y2KvYqAZlt144zZxg",
-authDomain: "tet-gia-toc-ho-truong.firebaseapp.com",
-projectId: "tet-gia-toc-ho-truong",
-};
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+const spinBtn = document.getElementById("spinBtn");
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-const prizes=[
-{text:"500k",value:500000},
-{text:"200k",value:200000},
-{text:"100k",value:100000},
-{text:"50k",value:50000},
-{text:"20k",value:20000},
-{text:"Chúc may mắn",value:0}
+const prizes = [
+  "500k",
+  "50k",
+  "20k",
+  "100k",
+  "10k",
+  "200k"
 ];
 
-const totalBudget=3000000;
-const gameRef=db.collection("game").doc("main");
-const wheel=document.getElementById("wheel");
+const colors = ["#f39c12","#e74c3c"];
+const centerX = 200;
+const centerY = 200;
+const radius = 180;
 
-let currentRotation=0;
-const resetPassword="vtc";
+let currentAngle = 0;
+let spinning = false;
 
-/* ===== VẼ CHỮ ===== */
-window.onload=function(){
-const radius=wheel.offsetWidth/2;
-const textRadius=radius*0.55;
+function drawWheel(angle=0){
+  const arc = (2*Math.PI)/prizes.length;
 
-prizes.forEach((p,i)=>{
-const angle=i*60+30;
+  ctx.clearRect(0,0,400,400);
 
-const label=document.createElement("div");
-label.style.position="absolute";
-label.style.left="50%";
-label.style.top="50%";
-label.style.width="100px";
-label.style.marginLeft="-50px";
-label.style.marginTop="-12px";
-label.style.textAlign="center";
-label.style.fontWeight="bold";
-label.style.fontSize="15px";
-label.style.pointerEvents="none";
-label.style.color="#b30000";
+  for(let i=0;i<prizes.length;i++){
+    const start = angle + i*arc;
+    const end = start + arc;
 
-label.style.transform=
-`rotate(${angle}deg) translateY(-${textRadius}px) rotate(-${angle}deg)`;
+    ctx.beginPath();
+    ctx.moveTo(centerX,centerY);
+    ctx.arc(centerX,centerY,radius,start,end);
+    ctx.fillStyle = colors[i%2];
+    ctx.fill();
+    ctx.closePath();
 
-label.innerText=p.text;
-wheel.appendChild(label);
-});
-};
-
-/* ===== INIT ===== */
-async function init(){
-const snap=await gameRef.get();
-if(!snap.exists){
-await gameRef.set({
-  budget: totalBudget,
-  players: {},
-  prizeCount:{
-    500000:0,
-    200000:0,
-    100000:0
+    ctx.save();
+    ctx.translate(centerX,centerY);
+    ctx.rotate(start + arc/2);
+    ctx.textAlign="right";
+    ctx.fillStyle="#fff";
+    ctx.font="bold 20px sans-serif";
+    ctx.fillText(prizes[i], radius-20, 5);
+    ctx.restore();
   }
-});
-}
-}
-init();
 
-/* ===== REALTIME ===== */
-gameRef.onSnapshot((doc)=>{
-if(!doc.exists) return;
-const data=doc.data();
-
-document.getElementById("budget").innerText=
-data.budget.toLocaleString();
-
-let rankHTML="";
-Object.entries(data.players)
-.sort((a,b)=>b[1]-a[1])
-.forEach(([name,value])=>{
-rankHTML+=`<div>${name}: ${value.toLocaleString()} đ</div>`;
-});
-document.getElementById("ranking").innerHTML=rankHTML;
-});
-
-/* ===== SPIN ===== */
-async function spin(){
-
-const btn=document.getElementById("spinBtn");
-btn.disabled=true;
-
-const name=document.getElementById("name").value.trim();
-if(!name){
-btn.disabled=false;
-return alert("Nhập tên!");
+  // vẽ mũi tên
+  ctx.fillStyle="#fff";
+  ctx.beginPath();
+  ctx.moveTo(centerX,20);
+  ctx.lineTo(centerX-15,60);
+  ctx.lineTo(centerX+15,60);
+  ctx.fill();
 }
 
-try{
-await db.runTransaction(async(transaction)=>{
-const snap=await transaction.get(gameRef);
-const data=snap.data();
+drawWheel();
 
-if(data.players[name]!==undefined)
-throw "Tên đã quay!";
+spinBtn.onclick = function(){
+  if(spinning) return;
 
-let available=prizes.filter(p=>{
-if(p.value>data.budget) return false;
-if(
- (p.value==500000 || p.value==200000 || p.value==100000)
- && data.prizeCount?.[p.value]>=1
-) return false;
-return true;
-});
+  spinning = true;
+  spinBtn.disabled = true;
 
-if(available.length==0)
-throw "Hết ngân sách!";
+  const targetIndex = Math.floor(Math.random()*prizes.length);
 
-let prize=available[Math.floor(Math.random()*available.length)];
-let index=prizes.findIndex(p=>p.value==prize.value);
+  const arc = (2*Math.PI)/prizes.length;
 
-const segmentAngle = 360 / prizes.length;
+  // góc giữa ô trúng
+  const targetAngle = targetIndex*arc + arc/2;
 
-// Góc giữa của ô trúng (theo hệ conic-gradient)
-const segmentCenter = index * segmentAngle + segmentAngle / 2;
+  // mũi tên ở -90deg (trên cùng)
+  const pointerAngle = -Math.PI/2;
 
-// Mũi tên đang ở vị trí 12h = 270 độ
-const pointerAngle = 270;
+  // tính góc quay cần thiết
+  let rotation = pointerAngle - targetAngle;
 
-// Góc cần quay để ô đó nằm đúng mũi tên
-let rotationNeeded = pointerAngle - segmentCenter;
+  // thêm nhiều vòng quay
+  const extra = Math.PI*2*8;
 
-// Chuẩn hóa về 0–360
-rotationNeeded = (rotationNeeded + 360) % 360;
+  const finalAngle = currentAngle + extra + rotation;
 
-// Thêm nhiều vòng quay cho đẹp
-const extraSpins = 360 * 8;
-
-// Góc cuối cùng tuyệt đối
-currentRotation = currentRotation + extraSpins + rotationNeeded;
-
-currentRotation = 0;
-wheel.style.transform = "rotate(0deg)";
-
-let newPlayers={...data.players};
-newPlayers[name]=prize.value;
-
-let newPrizeCount=data.prizeCount || {
-500000:0,200000:0,100000:0
-};
-
-if(prize.value==500000 || prize.value==200000 || prize.value==100000){
-newPrizeCount[prize.value]+=1;
+  animateSpin(currentAngle, finalAngle, 4000, ()=>{
+    currentAngle = finalAngle % (Math.PI*2);
+    spinning = false;
+    spinBtn.disabled = false;
+    alert("🎉 Trúng: " + prizes[targetIndex]);
+  });
 }
 
-transaction.update(gameRef,{
-players:newPlayers,
-budget:data.budget-prize.value,
-prizeCount:newPrizeCount
-});
+function animateSpin(start, end, duration, callback){
+  const startTime = performance.now();
 
-setTimeout(()=>{
-alert(name+" trúng "+prize.text);
-},4000);
+  function frame(now){
+    const progress = Math.min((now-startTime)/duration,1);
 
-});
-}catch(err){
-alert(err);
+    // easing casino mượt
+    const ease = 1 - Math.pow(1-progress,4);
+
+    const angle = start + (end-start)*ease;
+
+    drawWheel(angle);
+
+    if(progress<1){
+      requestAnimationFrame(frame);
+    }else{
+      callback();
+    }
+  }
+
+  requestAnimationFrame(frame);
 }
-
-setTimeout(()=>btn.disabled=false,4000);
-}
-
-/* ===== RESET ===== */
-async function resetGame(){
-const pass=prompt("Nhập mật khẩu reset:");
-if(pass!==resetPassword){
-alert("Sai mật khẩu!");
-return;
-}
-
-await gameRef.set({
-budget:totalBudget,
-players:{},
-prizeCount:{
-500000:0,
-200000:0,
-100000:0
-}
-});
-
-currentRotation=-90;
-wheel.style.transform="rotate(-90deg)";
-alert("Đã reset game!");
-}
-
-/* ===== QR ===== */
-new QRCode(document.getElementById("qr"),window.location.href);
 </script>
 
 </body>
