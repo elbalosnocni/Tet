@@ -79,13 +79,28 @@ function drawWheel(angle=0){
     ctx.restore();
   }
 
-  // pointer
-  ctx.fillStyle="#fff";
-  ctx.beginPath();
-  ctx.moveTo(centerX,20);
-  ctx.lineTo(centerX-15,60);
-  ctx.lineTo(centerX+15,60);
-  ctx.fill();
+  // ===== Pointer outside =====
+const pointerHeight = 25;
+const pointerWidth = 20;
+
+// vị trí đỉnh bánh xe
+const topY = centerY - radius;
+
+ctx.fillStyle = "#ffffff";
+ctx.beginPath();
+
+// đỉnh tam giác chạm vào bánh xe
+ctx.moveTo(centerX, topY - 2);
+
+// đáy tam giác nằm phía trên
+ctx.lineTo(centerX - pointerWidth/2, topY - pointerHeight);
+ctx.lineTo(centerX + pointerWidth/2, topY - pointerHeight);
+
+ctx.closePath();
+ctx.fill();
+ctx.strokeStyle = "#f1c40f";
+ctx.lineWidth = 3;
+ctx.stroke();  
 }
 
 drawWheel();
