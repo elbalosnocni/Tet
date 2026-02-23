@@ -97,34 +97,28 @@ spinBtn.onclick = function(){
   spinBtn.disabled = true;
 
   const arc = (2*Math.PI)/prizes.length;
+
   const targetIndex = Math.floor(Math.random()*prizes.length);
 
-  // góc giữa của ô trúng
-  const targetAngle = targetIndex*arc + arc/2;
+  // Góc giữa của ô trúng (theo hệ vẽ)
+  const targetAngle = targetIndex * arc + arc/2;
 
-  // mũi tên ở -PI/2
+  // Mũi tên ở 12h = -PI/2
   const pointerAngle = -Math.PI/2;
 
-  // chuẩn hóa góc hiện tại
-  let normalizedCurrent = currentAngle % (Math.PI*2);
-  if(normalizedCurrent < 0) normalizedCurrent += Math.PI*2;
+  // Vì drawWheel dùng -angle
+  // Góc bánh xe cần có để target nằm dưới pointer:
+  const absoluteStopAngle = targetAngle - pointerAngle;
 
-  // góc hiện tại của ô 0
-  // vì ta vẽ -angle
-  let wheelPosition = -normalizedCurrent;
-  wheelPosition = (wheelPosition + Math.PI*2) % (Math.PI*2);
+  // Thêm nhiều vòng quay đẹp
+  const spins = Math.PI*2*8;
 
-  // góc cần quay thêm
-  let delta = targetAngle - pointerAngle - wheelPosition;
-
-  delta = (delta + Math.PI*2) % (Math.PI*2);
-
-  const extra = Math.PI*2*6;
-
-  const finalAngle = currentAngle + extra + delta;
+  // 👉 Quan trọng: KHÔNG cộng delta phức tạp
+  const finalAngle = spins + absoluteStopAngle;
 
   animateSpin(currentAngle, finalAngle, 4000, ()=>{
     currentAngle = finalAngle % (Math.PI*2);
+
     spinning = false;
     spinBtn.disabled = false;
 
