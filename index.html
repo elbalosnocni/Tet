@@ -37,22 +37,22 @@ margin:5px;
 }
 
 #wheel{
-width:320px;
-height:320px;
-margin:20px auto;
-border-radius:50%;
-border:10px solid #f1c40f;
-position:relative;
-transition: transform 4s cubic-bezier(.25,1,.5,1);
-background:conic-gradient(
-#ffeaa7 0deg 60deg,
-#fab1a0 60deg 120deg,
-#ffeaa7 120deg 180deg,
-#fab1a0 180deg 240deg,
-#ffeaa7 240deg 300deg,
-#fab1a0 300deg 360deg
-);
-transform: rotate(-90deg);
+  width:320px;
+  height:320px;
+  margin:20px auto;
+  border-radius:50%;
+  border:10px solid #f1c40f;
+  position:relative;
+  transition: transform 4s cubic-bezier(.25,1,.5,1);
+  background:conic-gradient(
+    #ffeaa7 0deg 60deg,
+    #fab1a0 60deg 120deg,
+    #ffeaa7 120deg 180deg,
+    #fab1a0 180deg 240deg,
+    #ffeaa7 240deg 300deg,
+    #fab1a0 300deg 360deg
+  );
+  transform: rotate(0deg);
 }
 
 .pointer{
@@ -113,7 +113,7 @@ const totalBudget=3000000;
 const gameRef=db.collection("game").doc("main");
 const wheel=document.getElementById("wheel");
 
-let currentRotation=-90;
+let currentRotation=0;
 const resetPassword="vtc";
 
 /* ===== VẼ CHỮ ===== */
@@ -215,18 +215,27 @@ let prize=available[Math.floor(Math.random()*available.length)];
 let index=prizes.findIndex(p=>p.value==prize.value);
 
 const segmentAngle = 360 / prizes.length;
-const targetAngle = index * segmentAngle + segmentAngle / 2;
 
-// góc bánh xe cần dừng (đã bù -90deg ban đầu)
-const stopAngle = 270 - targetAngle;
+// Góc giữa của ô trúng (theo hệ conic-gradient)
+const segmentCenter = index * segmentAngle + segmentAngle / 2;
 
-// nhiều vòng quay cho đẹp
-const extraSpins = 360 * 10;
+// Mũi tên đang ở vị trí 12h = 270 độ
+const pointerAngle = 270;
 
-// đặt góc tuyệt đối luôn (không cộng dồn)
-currentRotation = extraSpins + stopAngle;
+// Góc cần quay để ô đó nằm đúng mũi tên
+let rotationNeeded = pointerAngle - segmentCenter;
 
-wheel.style.transform = `rotate(${currentRotation}deg)`;
+// Chuẩn hóa về 0–360
+rotationNeeded = (rotationNeeded + 360) % 360;
+
+// Thêm nhiều vòng quay cho đẹp
+const extraSpins = 360 * 8;
+
+// Góc cuối cùng tuyệt đối
+currentRotation = currentRotation + extraSpins + rotationNeeded;
+
+currentRotation = 0;
+wheel.style.transform = "rotate(0deg)";
 
 let newPlayers={...data.players};
 newPlayers[name]=prize.value;
